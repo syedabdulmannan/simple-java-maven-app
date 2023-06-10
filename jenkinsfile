@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    environment {
+         dockerimagename = "syedabdulmannan1234/mavenjarsample"
+         dockerImage = ""
+    }
+    stages {
+        stage('Github') {
+            steps {
+              
+                git 'https://github.com/syedabdulmannan/maven-jar-sample'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                // Build your application (e.g., compile code, run tests, etc.)
+                // Modify this step according to your project's build process
+                sh 'mvn clean install'
+            }
+        }
+        
+        stage('Build image') {
+          steps{
+            script {
+              dockerImage = docker.build dockerimagename
+            }
+          }
+        }
+
+        stage('Pushing Image') {
+          environment {
+                   registryCredential = 'Dockercred'
+               }
+          steps{
+            script {
+              docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) {
+                dockerImage.push("latest")
+              }
+            }
+          }
+        }
+    }
+}
